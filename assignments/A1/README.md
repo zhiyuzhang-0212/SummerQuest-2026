@@ -1,6 +1,9 @@
 # A1：Basics——从零实现语言模型
 
-> 状态：已发布。题面版本 26.0.3，适用于 OpenMOSS 暑期集训 2026。
+> 状态：已发布。题面版本 26.0.4，适用于 OpenMOSS 暑期集训 2026。
+>
+> 更新（2026-07-13）：补充实验日志的统一格式与评估说明；不新增实验任务。此前已按旧格式
+> 开始记录的日志，只要包含等价信息即可接受。
 >
 > 本页提供中文精简讲解和实验室提交规范。公式、逐题要求与实现细节请参考
 > [Version 26.0.3 原 PDF](https://github.com/stanford-cs336/assignment1-basics/blob/a158843b20107949f1a8d7df1b05cd33b9166712/cs336_assignment1_basics.pdf)；
@@ -19,7 +22,7 @@
   `../assignment1-basics`。
 - 本作业沿用上游 21 个 adapter 函数作为稳定代码接口；真实实现必须放在
   `cs336_basics/`，不能写进 adapter，也不能修改公共测试。
-- 本作业满分为 100 分。`README.md` 和日志的具体内容要求及评分标准由作业批改助教完善。
+- 本作业满分为 100 分。评分标准与评估说明见 [`EVALUATION.md`](EVALUATION.md)（评估要求的补充，不改变本页作业要求）。
 
 开始前请阅读[公开性与提交规则](../../docs/submission-rules.md)。本仓库公开可见，内部
 服务器、数据、路径、凭据和未公开实验信息不得进入 GitHub 或 Git 历史。
@@ -71,7 +74,7 @@ students/<同学真名>/assignments/A1/
 │   │   └── *.py                 # 训练、编码、生成入口
 │   └── configs/
 │       └── *.{json,toml,yaml}   # 可选：公开且可复现的轻量配置
-├── logs/                         # 必交：具体文件与格式待作业批改助教补充
+├── logs/                         # 必交：格式见下文《实验日志格式》
 └── assets/
     └── *.{png,jpg,jpeg,webp,svg} # 可选：README.md 引用的压缩图表
 ```
@@ -87,17 +90,46 @@ students/<同学真名>/assignments/A1/
 - `submission/configs/`：可选，保存轻量、公开且可复现的配置。
 - `assets/`：可选，保存 `README.md` 引用的压缩图表。
 
-> **TODO（作业批改助教）**：完善 `README.md` 和 `logs/` 的具体内容、文件名、格式、字段，
-> 以及满分 100 分的评分标准。
+> `logs/` 的格式见下文《实验日志格式》；评分标准与评测方式见 [`EVALUATION.md`](EVALUATION.md)。
 
 书面题、公式、表格和实验分析统一使用 Markdown；不提交 PDF、Office 文档或 notebook
 导出文件。依赖由 `../assignment1-basics/uv.lock` 固定，个人提交中不添加 `pyproject.toml`、
 `requirements.txt` 或 lock file。
 
+## 报告内容
+
+报告（`README.md`）应覆盖下列内容，不限定小节标题与顺序：
+
+- 书面题：`unicode1`、`unicode2`，以及 AdamW 显存、FLOPs 与训练时间核算；
+- Tokenizer 实验：compression ratio、最长 token、throughput，以及 TinyStories 与 OWT 的对比；
+- TinyStories 训练：loss 曲线与最终 validation loss；
+- 学习率扫、batch size，以及四个消融（删除 RMSNorm、Post-Norm、NoPE、SiLU）的结果与分析；
+- OWT 训练结果与分析；
+- 文本生成样本及简评。
+
+## 实验日志格式
+
+为便于统一核验，`logs/` 的**核心信息为要求，文件名与组织方式为推荐**：
+
+- **要求（核心信息）**：训练类 run 逐点记录 `step`、`wall_clock_sec`（墙钟秒）、`train_loss`、
+  `lr`，并定期记录 `val_loss`；另外给出最终 val loss、总训练时间和关键配置（`d_model`、
+  层数、头数、context length、batch size、总步数）。推荐用 JSONL（每行一个 JSON 对象）
+  承载逐点信息，用 `summary.json` 承载汇总。
+- **推荐（组织方式）**：文件名与目录用 `train_tinystories.jsonl`、`lr_sweep/`、`batch_size/`、
+  `ablation_*.jsonl`、`train_owt.jsonl`、`summary.json`，分别对应主训练、学习率扫、batch
+  size、四个消融与 OWT。
+- 能提供**等价信息**的其他格式（如 CSV、单一汇总文件）同样接受；**不因纯粹的文件名或
+  组织差异扣分**。
+
+JSONL 行示例：
+
+```json
+{"step": 1000, "wall_clock_sec": 121.3, "train_loss": 2.11, "val_loss": 2.03, "lr": 5e-4}
+```
+
 ## 文件规则
 
-- 沿用仓库现有规则：学生目录内单个文件不得超过 5 MiB；日志的具体格式由作业批改
-  助教决定并补充。
+- 沿用仓库现有规则：学生目录内单个文件不得超过 5 MiB；日志格式见上文《实验日志格式》。
 - GitHub 与飞书的公开范围继续遵循仓库统一的
   [公开性与提交规则](../../docs/submission-rules.md)。
 
